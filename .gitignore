@@ -1,0 +1,22 @@
+# Python pycache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Large Datasets
+matches.csv
+deliveries.csv
+deliveries.csv.zip
+cleaned_data.csv
+
+# Serialized Model Pickles
+*.pkl
+
+# Mock Visualizations (only keep final repo plots if desired)
+mock_comparison.png
+mock_progression.png
+mock_*.png
+
+# Operating system files
+.DS_Store
+Thumbs.db
