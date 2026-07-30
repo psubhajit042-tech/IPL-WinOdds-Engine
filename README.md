@@ -20,9 +20,10 @@ ipl_win_Predictor/
 ├── visualization.py             # Custom graphing helpers (Seaborn & Matplotlib)
 ├── main.py                      # Orchestrator script running the entire pipeline end-to-end
 │
-├── cleaned_data.csv             # Generated intermediate dataset
+├── cleaned_data.csv             # Generated intermediate dataset (includes match_id grouping key)
 ├── pipe_lr.pkl                  # Serialized Logistic Regression model pipeline
 ├── pipe_rf.pkl                  # Serialized Random Forest model pipeline
+├── pipe_xgb.pkl                 # Serialized XGBoost model pipeline
 │
 ├── model_comparison.png         # Saved metric comparison chart
 ├── match_981009_progression.png # Progression plot for Match ID 981009
@@ -41,8 +42,9 @@ ipl_win_Predictor/
   - Current Run Rate (CRR)
   - Required Run Rate (RRR)
   - Remaining Wickets & Remaining Balls
-- **Dual Pipeline Architecture**: Combines `OneHotEncoder` preprocessing and classifier into single-pipeline entities for robust training and deployment.
-- **Stratified 10-Fold Cross-Validation**: Evaluates Logistic Regression and Random Forest classifiers for stability across folds.
+- **Anti-Leakage (Group-Aware) Splitting**: Train/test split and cross-validation are grouped by `match_id`, so every ball of a match stays entirely in train *or* test. This eliminated a same-match trajectory leak that previously inflated tree models to ~99.8%.
+- **Triple Pipeline Architecture**: Compares `Logistic Regression`, `Random Forest`, and `XGBoost`, each combining `OneHotEncoder` preprocessing and classifier into a single pipeline.
+- **Group-Aware Cross-Validation**: Evaluates all three classifiers with `GroupKFold` for honest, leakage-free stability across folds.
 - **Match Win Progression Dashboard**: Plots over-by-over charts depicting runs scored, wickets lost, and fluctuating win/lose probability curves for historical matches.
 - **Interactive Live Predictor**: Accepts manual match states and runs real-time predictions.
 
@@ -109,10 +111,15 @@ python visualization.py
 
 ## 📊 Model Evaluation Summary
 
-| Model | Mean CV Accuracy | Standard Deviation | Best For |
-| :--- | :--- | :--- | :--- |
-| **Logistic Regression** | `~81.45%` | `~0.0048` | Smooth, realistic, and continuous live probabilities |
-| **Random Forest** | `~99.86%` | `~0.0004` | High accuracy, deterministic classification |
+Evaluated with **group-aware cross-validation** (`GroupKFold` by `match_id`, plus a `GroupShuffleSplit` holdout) so that no match contributes balls to both train and test. This prevents the same-match trajectory leakage that previously inflated tree models to ~99.8%.
+
+| Model | Mean CV Accuracy | Std. Dev. | ROC-AUC (holdout) | Best For |
+| :--- | :--- | :--- | :--- | :--- |
+| **Logistic Regression** | `77.29%` | `0.0269` | `0.8276` | Smooth, realistic, and continuous live probabilities |
+| **Random Forest** | `75.62%` | `0.0157` | `0.8230` | Strong non-linear baseline |
+| **XGBoost** | `76.77%` | `0.0237` | `0.8325` | Best probability calibration (lowest MAE) |
+
+> **Why Logistic Regression wins here:** Under an honest (group-aware) split, linear boundaries on run-rate features generalize slightly better than tree ensembles. The earlier ~99.8% Random Forest figure was a data-leakage artifact of a random row split; this README now reports the defensible numbers.
 
 ---
 

@@ -104,13 +104,15 @@ def match_progression(deliveries_df, match_id, model):
                     'total_runs_x', 'crr', 'rrr']
     temp_df = match[feature_cols].copy()
 
-    # 3. Clean infs/NaNs (same logic as notebook)
-    temp_df = temp_df.replace([np.inf, -np.inf], np.nan)
-    temp_df['city'] = temp_df['city'].fillna('Unknown')
-    
+    # 3. Clean infs/NaNs (numeric columns only, avoids pandas downcasting FutureWarning)
     numeric_cols = ['runs_left', 'balls_left', 'wickets', 'total_runs_x', 'crr', 'rrr']
     for col in numeric_cols:
-        temp_df[col] = temp_df[col].fillna(0)
+        # Convert to float first, then replace inf -> NaN -> 0 in one typed pass.
+        # Using a per-column numeric assign avoids the deprecated `replace` downcast path.
+        col_vals = pd.to_numeric(temp_df[col], errors='coerce').astype(float)
+        col_vals = col_vals.replace([np.inf, -np.inf], np.nan).fillna(0)
+        temp_df[col] = col_vals
+    temp_df['city'] = temp_df['city'].fillna('Unknown')
 
     # Remove cases where balls_left == 0 to prevent downstream RRR calculations from failing
     temp_df = temp_df[temp_df['balls_left'] != 0]

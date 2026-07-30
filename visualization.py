@@ -25,13 +25,18 @@ def plot_model_comparison(metrics_df, save_path='model_comparison.png'):
     plt.figure(figsize=(12, 7))
     sns.set_theme(style="whitegrid")
     
-    # Standard custom professional colors (viridis palette or customized)
+    # Standard custom professional colors (viridis palette or customized).
+    # Palette covers all three models; extra entries are simply unused.
     ax = sns.barplot(
-        x='Metric', 
-        y='Score', 
-        hue='Model', 
-        data=metrics_df, 
-        palette={'Logistic Regression': '#4a90e2', 'Random Forest': '#2ecc71'}
+        x='Metric',
+        y='Score',
+        hue='Model',
+        data=metrics_df,
+        palette={
+            'Logistic Regression': '#4a90e2',
+            'Random Forest': '#2ecc71',
+            'XGBoost': '#e67e22'
+        }
     )
     
     plt.title('Comparison of Model Performance Metrics', fontsize=16, fontweight='bold', pad=15)
@@ -140,16 +145,20 @@ if __name__ == '__main__':
     import pandas as pd
     print("Testing visualization modules with synthetic data...")
     
-    # Mock metrics
+    # Mock metrics (illustrative honest group-CV numbers)
     mock_metrics = pd.DataFrame([
-        {'Model': 'Logistic Regression', 'Metric': 'Accuracy', 'Score': 0.8145},
-        {'Model': 'Logistic Regression', 'Metric': 'Precision', 'Score': 0.8112},
-        {'Model': 'Logistic Regression', 'Metric': 'Recall', 'Score': 0.8240},
-        {'Model': 'Logistic Regression', 'Metric': 'F1 Score', 'Score': 0.8175},
-        {'Model': 'Random Forest', 'Metric': 'Accuracy', 'Score': 0.9986},
-        {'Model': 'Random Forest', 'Metric': 'Precision', 'Score': 0.9982},
-        {'Model': 'Random Forest', 'Metric': 'Recall', 'Score': 0.9990},
-        {'Model': 'Random Forest', 'Metric': 'F1 Score', 'Score': 0.9986}
+        {'Model': 'Logistic Regression', 'Metric': 'Accuracy', 'Score': 0.7730},
+        {'Model': 'Logistic Regression', 'Metric': 'Precision', 'Score': 0.7700},
+        {'Model': 'Logistic Regression', 'Metric': 'Recall', 'Score': 0.7850},
+        {'Model': 'Logistic Regression', 'Metric': 'F1 Score', 'Score': 0.7770},
+        {'Model': 'Random Forest', 'Metric': 'Accuracy', 'Score': 0.7600},
+        {'Model': 'Random Forest', 'Metric': 'Precision', 'Score': 0.7580},
+        {'Model': 'Random Forest', 'Metric': 'Recall', 'Score': 0.7700},
+        {'Model': 'Random Forest', 'Metric': 'F1 Score', 'Score': 0.7640},
+        {'Model': 'XGBoost', 'Metric': 'Accuracy', 'Score': 0.7680},
+        {'Model': 'XGBoost', 'Metric': 'Precision', 'Score': 0.7650},
+        {'Model': 'XGBoost', 'Metric': 'Recall', 'Score': 0.7780},
+        {'Model': 'XGBoost', 'Metric': 'F1 Score', 'Score': 0.7710}
     ])
     
     # Mock progression

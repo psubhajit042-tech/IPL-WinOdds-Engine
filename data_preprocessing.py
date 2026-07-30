@@ -116,14 +116,21 @@ def preprocess_data(matches_df, deliveries_df):
     delivery_df['result'] = delivery_df.apply(result_indicator, axis=1)
     
     # 9. Extract model training features
+    # NOTE: 'match_id' is intentionally retained as the FIRST column so that
+    # model_training.py can perform GROUP-AWARE splitting (GroupShuffleSplit /
+    # GroupKFold by match_id). It is NOT a predictive feature: it is stripped
+    # before any model sees the data. Keeping balls from the same match out of
+    # both train and test prevents the random-row split from leaking match
+    # trajectories (which previously inflated Random Forest to ~99.8%).
     feature_cols = [
-        'batting_team', 'bowling_team', 'city', 'runs_left', 
+        'match_id',                  # grouping key only, removed before training
+        'batting_team', 'bowling_team', 'city', 'runs_left',
         'balls_left', 'wickets', 'total_runs_x', 'crr', 'rrr', 'result'
     ]
     final_df = delivery_df[feature_cols].copy()
     
     # 10. Shuffle and Clean
-    # Shuffle dataframe rows
+    # Shuffle dataframe rows (match_id grouping key must stay attached to its row)
     final_df = final_df.sample(final_df.shape[0], random_state=42)
     # Drop rows with NaN values (e.g. if city was empty)
     final_df.dropna(inplace=True)

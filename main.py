@@ -6,7 +6,8 @@ Author: SUBHAJIT
 This script orchestrates the entire machine learning workflow:
 1. Loads raw datasets (matches.csv, deliveries.csv)
 2. Runs data preprocessing & feature engineering
-3. Trains Logistic Regression & Random Forest models with 10-fold CV
+3. Trains Logistic Regression, Random Forest & XGBoost models with GROUP-AWARE
+   cross-validation (no same-match leakage) - the honest anti-leakage design
 4. Generates model comparison plots
 5. Performs over-by-over match progression analysis on historical matches (981009 and 1237181)
 6. Demonstrates real-time live situation prediction
@@ -42,12 +43,14 @@ def main():
     final_df.to_csv(cleaned_csv_path, index=False)
     print(f"Cleaned dataset saved successfully to '{cleaned_csv_path}'\n")
     
-    # 3. Model Training & Cross-Validation
-    pipe_lr, pipe_rf, metrics_df = train_and_evaluate_all(cleaned_csv_path)
-    
-    # Save both model pipelines to disk
+    # 3. Model Training & Cross-Validation (group-aware, anti-leakage)
+    pipe_lr, pipe_rf, metrics_df, all_pipes = train_and_evaluate_all(cleaned_csv_path)
+
+    # Save all trained model pipelines to disk
     save_model(pipe_lr, 'pipe_lr.pkl')
     save_model(pipe_rf, 'pipe_rf.pkl')
+    if 'XGBoost' in all_pipes:
+        save_model(all_pipes['XGBoost'], 'pipe_xgb.pkl')
     
     # 4. Model Comparison Visualization
     print("\nGenerating model performance comparison visualization...")
