@@ -119,8 +119,6 @@ Evaluated with **group-aware cross-validation** (`GroupKFold` by `match_id`, plu
 | **Random Forest** | `75.62%` | `0.0157` | `0.8230` | Strong non-linear baseline |
 | **XGBoost** | `76.77%` | `0.0237` | `0.8325` | Best probability calibration (lowest MAE) |
 
-> **Why Logistic Regression wins here:** Under an honest (group-aware) split, linear boundaries on run-rate features generalize slightly better than tree ensembles. The earlier ~99.8% Random Forest figure was a data-leakage artifact of a random row split; this README now reports the defensible numbers.
-
 ---
 
 ## 📈 Visualizations Generated
